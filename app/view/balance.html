@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Ваш баланс{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <style>
+    .balance-box {
+      max-width: 480px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .balance-box h1 {
+      margin-top: 0;
+      text-align: center;
+    }
+    .balance-box p {
+      font-size: 1.1rem;
+      text-align: center;
+    }
+    .balance-box form {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    .balance-box input[type="number"] {
+      width: 60%;
+      padding: .4rem;
+      margin-right: .5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .balance-box button {
+      padding: .5rem 1.2rem;
+      background: #336699;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .error-msg   { color: #c0392b; text-align: center; margin-top: 1rem; }
+    .success-msg { color: #27ae60; text-align: center; margin-top: 1rem; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="balance-box">
+  <h1>Привет,  {{ user }}!</h1>
+
+  <p>Ваш текущий баланс: <strong>{{ balance }} кредитов</strong></p>
+
+  {# после успешного пополнения #}
+  {% if new_balance is defined %}
+    <p class="success-msg">
+      Баланс успешно обновлён: {{ new_balance }} кредитов
+    </p>
+  {% endif %}
+
+  {# при ошибках пополнения #}
+  {% if errors %}
+    {% for err in errors %}
+      <p class="error-msg">{{ err }}</p>
+    {% endfor %}
+  {% endif %}
+
+  <form action="" method="post">
+    <label for="amount">Сумма пополнения:</label>
+    <input type="number"
+           id="amount"
+           name="amount"
+           step="0.01"
+           placeholder="Введите сумму"
+           required>
+    <button type="submit">Пополнить</button>
+  </form>
+</div>
+<hr>
+{% endblock %}

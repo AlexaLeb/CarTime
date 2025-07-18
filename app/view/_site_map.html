@@ -1,0 +1,36 @@
+<nav class="site-map">
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/api/balance/">Balance</a></li>
+    <li><a href="/api/model">Model</a></li>
+    <li><a href="/login/login">Login</a></li>
+    <li><a href="/login/logout">Logout</a></li>
+  </ul>
+</nav>
+
+<style>
+  .site-map {
+    text-align: center;
+    margin: 2rem 0;
+  }
+  .site-map ul {
+    display: inline-flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .site-map li + li {
+    margin-left: 1.5rem;
+  }
+  .site-map a {
+    text-decoration: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    color: #336699;
+    transition: background 0.2s, color 0.2s;
+  }
+  .site-map a:hover {
+    background: #336699;
+    color: #fff;
+  }
+</style>

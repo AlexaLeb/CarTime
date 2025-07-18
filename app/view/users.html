@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация пользователя{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <style>
+    .form-box {
+      max-width: 400px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .form-box h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      color: #336699;
+    }
+    .form-box label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-box input[type="email"],
+    .form-box input[type="password"] {
+      width: 100%;
+      padding: .5rem;
+      margin-top: .3rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .form-box button {
+      display: block;
+      width: 100%;
+      padding: .6rem;
+      margin-top: 1.5rem;
+      background: #336699;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .form-box button:hover {
+      background: #28527a;
+    }
+    .error-msg {
+      color: #c0392b;
+      margin-top: .5rem;
+      text-align: center;
+      font-size: .95rem;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="form-box">
+  <h1>Создать аккаунт</h1>
+
+  {% if errors %}
+    {% for err in errors %}
+      <p class="error-msg">{{ err }}</p>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    <label for="username">Email</label>
+    <input
+      type="email"
+      id="username"
+      name="username"
+      value="{{ username }}"
+      placeholder="you@example.com"
+      required
+    >
+
+    <label for="password">Пароль</label>
+    <input
+      type="password"
+      id="password"
+      name="password"
+      placeholder="Придумайте надёжный пароль"
+      required
+    >
+
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+</div>
+
+<hr>
+{% include "_site_map.html" %}
+{% endblock %}

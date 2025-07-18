@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}ML Budget Assistant{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <style>
+    .model-box {
+      max-width: 640px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .model-box h1 {
+      margin-top: 0;
+      text-align: center;
+    }
+    .model-box p {
+      text-align: center;
+      font-size: 1.1rem;
+    }
+    .model-box form > div {
+      margin: 1rem 0;
+    }
+    .model-box label {
+      display: block;
+      margin-bottom: .3rem;
+      font-weight: 600;
+    }
+    .model-box input[type="number"],
+    .model-box input[type="text"] {
+      width: 100%;
+      padding: .5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .model-box button {
+      display: block;
+      margin: 1.5rem auto 0;
+      padding: .6rem 1.4rem;
+      background: #336699;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .result-box {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid #27ae60;
+      border-radius: 6px;
+      background: #eafaf1;
+    }
+    .history {
+      margin-top: 2rem;
+    }
+    .history ul {
+      list-style: none;
+      padding: 0;
+    }
+    .history li {
+      padding: .4rem 0;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="model-box">
+  <h1>ML Budget Assistant</h1>
+  <p>Привет, <strong>{{ user }}</strong>! Здесь вы можете получить рекомендацию по распределению бюджета.</p>
+
+  <form action="" method="post">
+    <div>
+      <label for="budget_amount">Сумма бюджета:</label>
+      <input
+        type="number"
+        id="budget_amount"
+        name="budget_amount"
+        step="0.01"
+        placeholder="например, 1000"
+        required>
+    </div>
+    <div>
+      <label for="preferences">Приоритеты (JSON или строка):</label>
+      <input
+        type="text"
+        id="preferences"
+        name="preferences"
+        placeholder='{"Food":2,"Transport":1}'
+        required>
+    </div>
+    <button type="submit">Получить рекомендацию</button>
+  </form>
+
+  {# Если пришёл результат из POST #}
+  {% if result %}
+    <div class="result-box">
+      <h2>Результат предсказания:</h2>
+      <pre>{{ result }}</pre>
+      {% if new_balance is defined %}
+        <p>Ваш новый баланс: <strong>{{ new_balance }}</strong> кредитов</p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {# История задач #}
+  <div class="history">
+    <h2>История предсказаний:</h2>
+    {% if prediction_history %}
+      <ul>
+        {% for task in prediction_history %}
+          <li>
+            Задача №{{ task.id }} —
+            Дата: {{ task.timestamp }} —
+            Сумма: {{ task.budget_amount }} —
+            Приоритеты: {{ task.preferences }} —
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>У вас пока нет выполненных задач.</p>
+    {% endif %}
+  </div>
+</div>
+
+<hr>
+{% endblock %}

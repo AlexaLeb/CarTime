@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <style>
+        .login-box       { max-width:420px; margin:2rem auto; padding:2rem; border:1px solid #ddd;
+                           border-radius:8px; background:#fafafa; }
+        .login-box h1    { margin-top:0; text-align:center; }
+        .login-box label { font-weight:600; }
+        .login-box input[type="email"],
+        .login-box input[type="password"] {
+            width:100%; padding:.5rem; margin:.4rem 0 1rem 0; border:1px solid #ccc; border-radius:4px;
+        }
+        .login-box input[type="submit"] {
+            padding:.6rem 1.4rem; background:#336699; border:none; border-radius:6px; color:#fff;
+            cursor:pointer; width:100%; font-size:1rem;
+        }
+        .error-msg       { color:#c0392b; margin:.2rem 0; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="login-box">
+    <h1>Вход&nbsp;в&nbsp;систему&nbsp;🔑</h1>
+
+    {# вывод ошибок (если они есть) #}
+    {% if errors %}
+        {% for err in errors %}
+            <p class="error-msg">{{ err }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form action="/login/login" method="post">
+        <label for="username">Email</label>
+        <input type="email"
+               id="username"
+               name="username"
+               value="{{ username | default('') }}"
+               required>
+
+        <label for="password">Пароль</label>
+        <input type="password"
+               id="password"
+               name="password"
+               value="{{ password | default('') }}"
+               required>
+
+        <input type="submit" value="Войти">
+    </form>
+</div>
+<hr>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{# ---------- заголовок вкладки ---------- #}
+{% block title %}Добро пожаловать{% endblock %}
+
+{# ---------- дополнительные стили ---------- #}
+{% block head %}
+    {{ super() }}
+    <style>
+        .hero            { text-align: center; padding: 2rem 0; }
+        .hero h1         { margin-bottom: .5rem; font-size: 2.2rem; }
+        .hero p.lead     { font-size: 1.1rem; color: #555; }
+        .btn             { display: inline-block; margin: .5rem 1rem;
+                           padding: .6rem 1.2rem; border-radius: 6px;
+                           background: #336699; color: #fff; text-decoration: none; }
+        .btn.secondary   { background: #999; }
+        .features        { margin: 2rem auto; max-width: 760px; }
+        .features h3     { margin-top: 1.5rem; }
+        .features li     { margin: .4rem 0; }
+        .contact         { text-align: center; font-size: .9rem; color: #666; }
+    </style>
+{% endblock %}
+
+{# ---------- основное содержимое ---------- #}
+{% block content %}
+<div class="hero">
+    <h1>ML Помощник по бюджету</h1>
+    <p class="lead">
+        Умный сервис, который анализирует ваши расходы и&nbsp;советует,
+        как оптимально распределить бюджет с&nbsp;помощью&nbsp;ML‑модели.
+    </p>
+
+    {% if user %}
+        <h2>Вы вошли в систему</h2>
+        <p>
+            Привет, {{ user }}! Вы можете:
+            <a href="/api/balance" class="btn">Перейти в личный кабинет</a>
+            <a href="/api/model" class="btn secondary">Сделать предсказание</a>
+        </p>
+    {% else %}
+        <h2>Вы не вошли в систему</h2>
+        <p>
+            Здравствуйте, гость. Пожалуйста,
+            <a href="/login/login" class="btn">войдите</a>
+            или
+            <a href="/api/users/signup" class="btn secondary">зарегистрируйтесь</a>.
+        </p>
+    {% endif %}
+</div>
+
+<div class="features">
+    <h2>Как это работает?</h2>
+
+    <h3>1. Регистрация и кошелёк</h3>
+    <p>
+        Создайте аккаунт, пополните внутренний кошелёк условными кредитами —
+        каждое предсказание стоит&nbsp;50&nbsp;кредитов.
+    </p>
+
+    <h3>2. Загрузка данных</h3>
+    <p>
+        Через веб‑форму или REST API загрузите историю транзакций (CSV/JSON) —
+        система проверит данные и отобразит ошибки, если они есть.
+    </p>
+
+    <h3>3. Предсказание бюджета</h3>
+    <ul>
+        <li>Запрос отправляется в&nbsp;<strong>очередь RabbitMQ</strong>.</li>
+        <li>Несколько воркеров параллельно обрабатывают задачи.</li>
+        <li>ML‑модель возвращает рекомендованное распределение средств и сохраняет результат в вашем кабинете.</li>
+    </ul>
+
+    <h3>4. История и аналитика</h3>
+    <p>
+        Просматривайте историю всех запросов и списаний кредитов в одном месте.
+        Данные хранятся в PostgreSQL; мониторинг обеспечивают Grafana и Prometheus.
+    </p>
+</div>
+
+<hr>
+
+<div class="contact">
+    <p>Есть вопросы? Пишите на&nbsp;<a href="mailto:support@example.com">support@example.com</a></p>
+    <p>Версия&nbsp;{{ build_version | default('dev') }}</p>
+</div>
+{% endblock %}
