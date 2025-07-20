@@ -1,0 +1,5 @@
+outs:
+- md5: a68ff7a9dac77fc9202d018a50f4f554
+  size: 1343758662
+  hash: md5
+  path: best_sarimax_model.joblib
