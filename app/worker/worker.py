@@ -1,9 +1,9 @@
 import json
 import time
 import pika
-from database.database import get_session
-from models.services.prediction import prediction
-from logger.logging import get_logger
+from app.database.database import get_session
+from app.models.services.prediction import prediction
+from app.logger.logging import get_logger
 
 logger = get_logger(logger_name=__name__)
 
@@ -28,6 +28,7 @@ def callback(ch, method, properties, body):
     # Вызываем функцию, которая обрабатывает задачу предсказания:
     # create_prediction_task(session, user_id, budget_amount, preferences, simulated_result)
     prediction.create_prediction(session, user_id, 500, 50)
+    logger.warning('\nРАБОТАЕ\n')
 
     # def create_prediction(session, user_id: int, region: str, predicted_value: int, cost: Decimal)
     # Формирование ответа: создаем JSON-объект с результатом предсказания

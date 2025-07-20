@@ -1,0 +1,5 @@
+[core]
+    remote = lebedev
+['remote "lebedev"']
+    url = s3://lebedev/
+    endpointurl = http://89.223.69.137:9000
