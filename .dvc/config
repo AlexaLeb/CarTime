@@ -1,0 +1,7 @@
+[core]
+    remote = lebedev
+['remote "lebedev"']
+    url = s3://lebedev/
+    endpointurl = http://89.223.69.137:9000
+    access_key_id = hq2qXOteXC4vNoaQt1RH
+    secret_access_key = h7LnyuFUqUz0zoNryPTM2djdBaWIdiOGKlPuzWLC

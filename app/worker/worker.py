@@ -1,9 +1,10 @@
 import json
 import time
 import pika
-from app.database.database import get_session
-from app.models.services.prediction import prediction
-from app.logger.logging import get_logger
+from model import predict_from_dataframe
+from database.database import get_session
+from models.services import prediction
+from logger.logging import get_logger
 
 logger = get_logger(logger_name=__name__)
 
@@ -14,26 +15,28 @@ def callback(ch, method, properties, body):
         # Предположим, сообщение приходит как JSON
         message = json.loads(body)
         user_id = message.get("user_id")
-        budget_amount = message.get("budget_amount")
-        preferences = message.get("preferences")
-    except Exception as e:
-        logger.error(f'Ошибка {e}')
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-        return
+        exog_list = message.get("exog")
+
+        if not exog_list or not isinstance(exog_list, list):
+            raise ValueError("В сообщении отсутствует список 'exog' для прогноза")
+
+    # Выполняем прогноз
+    forecast_series = predict_from_dataframe(exog_list)
+    # Преобразуем Series в список словарей для сохранения
+    forecast_data = [
+        {"timestamp": ts.isoformat(), "ride_count": float(val)}
+        for ts, val in forecast_series.items()
+    ]
     # Создаем сессию для работы с БД; используем context manager для автоматического закрытия
     session = next(get_session())
-    # Поскольку алгоритм предсказания отсутствует, мы просто формируем фиктивный результат:
-    simulated_result = f"Simulated result for budget {budget_amount} and preferences {preferences}"
-    logger.info("Симулирован результат работы алгоритма")
-    # Вызываем функцию, которая обрабатывает задачу предсказания:
-    # create_prediction_task(session, user_id, budget_amount, preferences, simulated_result)
-    prediction.create_prediction(session, user_id, 500, 50)
-    logger.warning('\nРАБОТАЕ\n')
 
+    prediction.create_prediction(session, user_id, forecast_data, 50)
+    logger.warning('\nРАБОТАЕ\n')
+    session.commit()
     # def create_prediction(session, user_id: int, region: str, predicted_value: int, cost: Decimal)
     # Формирование ответа: создаем JSON-объект с результатом предсказания
     response = json.dumps({
-        "predicted_result": simulated_result
+        "predicted_result": forecast_data
     })
     # Если в свойствах сообщения указан reply_to, отправляем ответ обратно
     if properties.reply_to:

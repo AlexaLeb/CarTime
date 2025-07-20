@@ -3,9 +3,10 @@ from logger.logging import get_logger
 from typing import Optional, List
 from decimal import Decimal
 from sqlmodel import select
-from models import User, Balance, Transaction, Prediction
-from balance import get_by_user_id as get_balance
-from transaction import create_transaction
+from models.Prediction import Prediction
+from models import User, Balance, Transactions
+from models.services.balance import get_by_user_id as get_balance
+from models.services.transaction import create
 
 import bcrypt
 from datetime import datetime
@@ -14,12 +15,10 @@ from datetime import datetime
 logger = get_logger(logger_name=__name__)
 
 
-def create_prediction(session, user_id: int, predicted_value: int, cost) -> Prediction:
+def create_prediction(session, user_id: int, predicted_value, cost) -> Prediction:
     logger.debug(f"Creating prediction for user_id={user_id}, cost={cost}")
     # Создаем транзакцию дебет автоматически
-    create_transaction(session, user_id, get_balance(session, user_id).id,
-                             tx_type='withdraw', amount=cost,
-                             description=f'Prediction cost for region')
+    create(session, user_id, tx_type='withdraw', amount=cost, description=f'Prediction cost for region')
     # Создаем прогноз
     pred = Prediction(
         user_id=user_id,

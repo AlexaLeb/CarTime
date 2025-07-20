@@ -18,7 +18,7 @@ templates = Jinja2Templates(directory="view")
 
 
 @router.post("/")
-async def predict(request: Request, budget_amount: float = Form(...), preferences:  str = Form(...), session: Session = Depends(get_session),
+async def predict(request: Request,  exog: list[dict] = Body(..., description="Список словарей с ключами 'timestamp' (ISO) и экзогенными признаками"), session: Session = Depends(get_session),
                   user: str = Depends(authenticate_cookie)) -> dict:
     """
     Назначает задачу на предсказание для пользователя.
@@ -31,30 +31,22 @@ async def predict(request: Request, budget_amount: float = Form(...), preference
     logger.info('Запрос предсказания')
     if not balance:
         balance = create_balance(session, user_id, 0.0)
-
     if balance.amount < 50:
         logger.warning("Недостаточно кредитов")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Insufficient balance for prediction (requires at least 50 points)"
         )
-    # Списываем 50 баллов с баланса
-    try:
-        balance.withdraw(50)
-        balance = update_balance(session, balance)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     # Формируем payload для RPC-запроса
     payload = {
         "user_id": user_id,
-        "budget_amount": budget_amount,
-        "preferences": preferences
+        "exog": exog
     }
     logger.info("Вызов RPC клиента")
     rpc_client = PredictionRpcClient()
     result = rpc_client.call(payload)
-    logger.info('RPC клиент отработал')
+    logger.info('\nRPC клиент отработал')
     return templates.TemplateResponse("model.html", {"request": request, "user": user, "result": result, "new_balance": balance.amount})
 
 

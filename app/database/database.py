@@ -36,7 +36,6 @@ def init_db():
     balance.create(session, user_id=user.get_by_email(session, 'Admin@demo.ru').id, initial_amount=800)
     alex.balance = dmb
 
-
     session.commit()
     session.close()
     logger.info("База данных собрана с начальными значениями")

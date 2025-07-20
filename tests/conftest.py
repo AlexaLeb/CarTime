@@ -8,7 +8,7 @@ from api import app                     # ваш FastAPI‑приложение
 from database.database import get_session as get_session
 from database.config import get_settings
 from models.User import User
-from models.crud.user import create_user
+from models.services.user import create_user
 from auth.auth import authenticate
 from models.Balance import Balance
 from models.Prediction_task import PredictionTask
