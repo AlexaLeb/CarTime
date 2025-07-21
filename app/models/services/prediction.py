@@ -23,7 +23,7 @@ def create_prediction(session, user_id: int, predicted_value, cost) -> Predictio
     pred = Prediction(
         user_id=user_id,
         requested_at=datetime.utcnow(),
-        predicted_value=predicted_value,
+        predicted_values=predicted_value,
         cost=cost
     )
     session.add(pred)

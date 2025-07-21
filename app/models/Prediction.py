@@ -16,8 +16,7 @@ class Prediction(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id", nullable=False)
     requested_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
     predicted_values: List[Dict[str, Any]] = Field(
-        sa_column=Column(JSON),
-        nullable=False,
+        sa_column=Column(JSON, nullable=False),
         description="JSON array of {\"timestamp\": ..., \"ride_count\": ...} dicts"
     )
     cost: Decimal = Field(nullable=False)

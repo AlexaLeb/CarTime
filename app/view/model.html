@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}ML Budget Assistant{% endblock %}
+{% block title %}ML Ride Prediction{% endblock %}
 
 {% block head %}
   {{ super() }}
@@ -29,12 +29,12 @@
       margin-bottom: .3rem;
       font-weight: 600;
     }
-    .model-box input[type="number"],
-    .model-box input[type="text"] {
+    .model-box textarea {
       width: 100%;
       padding: .5rem;
       border: 1px solid #ccc;
       border-radius: 4px;
+      font-family: monospace;
     }
     .model-box button {
       display: block;
@@ -56,67 +56,100 @@
     .history {
       margin-top: 2rem;
     }
-    .history ul {
-      list-style: none;
-      padding: 0;
-    }
-    .history li {
-      padding: .4rem 0;
-      border-bottom: 1px solid #eee;
-    }
+    .history ul { list-style: none; padding: 0; }
+    .history li { padding: .4rem 0; border-bottom: 1px solid #eee; }
+    .forecast-list { list-style: none; padding: 0; }
+    .forecast-list li { margin: .2rem 0; }
   </style>
 {% endblock %}
 
 {% block content %}
 <div class="model-box">
-  <h1>ML Budget Assistant</h1>
-  <p>Привет, <strong>{{ user }}</strong>! Здесь вы можете получить рекомендацию по распределению бюджета.</p>
+  <h1>ML Ride Prediction</h1>
+  <p>Привет, <strong>{{ user }}</strong>! Вставьте JSON-массив exogenous данных для прогноза.</p>
 
   <form action="" method="post">
     <div>
-      <label for="budget_amount">Сумма бюджета:</label>
-      <input
-        type="number"
-        id="budget_amount"
-        name="budget_amount"
-        step="0.01"
-        placeholder="например, 1000"
-        required>
+      <label for="exog">Экзогенные данные (JSON array):</label>
+      <textarea id="exog" name="exog" rows="6" required placeholder='[{"timestamp":"2025-07-21T00:00:00","pickup_location_id":1,...}]'></textarea>
     </div>
-    <div>
-      <label for="preferences">Приоритеты (JSON или строка):</label>
-      <input
-        type="text"
-        id="preferences"
-        name="preferences"
-        placeholder='{"Food":2,"Transport":1}'
-        required>
-    </div>
-    <button type="submit">Получить рекомендацию</button>
+    <button type="submit">Получить прогноз</button>
   </form>
+  <div class="example-box" style="background:#f9f9f9;padding:1rem;border:1px solid #ccc;margin-bottom:1rem;">
+  <h2 style="margin-top:0;">Пример формата ввода:</h2>
+  <pre style="font-family:monospace; white-space:pre-wrap;">
+[
+  {
+    "timestamp": "2025-07-21T00:00:00",
+    "pickup_location_id": 1,
+    "AWND": 5.5,
+    "PRCP": 0.0,
+    "SNOW": 0,
+    "SNWD": 0,
+    "TMAX": 22,
+    "TMIN": 15,
+    "WT01": 0
+  },
+  {
+    "timestamp": "2025-07-21T01:00:00",
+    "pickup_location_id": 1,
+    "AWND": 5.0,
+    "PRCP": 0.1,
+    "SNOW": 0,
+    "SNWD": 0,
+    "TMAX": 21,
+    "TMIN": 14,
+    "WT01": 0
+  },
+  {
+    "timestamp": "2025-07-21T02:00:00",
+    "pickup_location_id": 1,
+    "AWND": 4.8,
+    "PRCP": 0.0,
+    "SNOW": 0,
+    "SNWD": 0,
+    "TMAX": 20,
+    "TMIN": 13,
+    "WT01": 1
+  }
+]
+  </pre>
+</div>
 
-  {# Если пришёл результат из POST #}
-  {% if result %}
+  {% if message %}
     <div class="result-box">
-      <h2>Результат предсказания:</h2>
-      <pre>{{ result }}</pre>
+      <h2>{{ message }}</h2>
       {% if new_balance is defined %}
         <p>Ваш новый баланс: <strong>{{ new_balance }}</strong> кредитов</p>
+      {% endif %}
+      {% if result %}
+        <h3>Результат прогноза:</h3>
+        <ul class="forecast-list">
+          {% for item in result %}
+            <li>
+              <strong>{{ item.timestamp }}</strong>
+              &mdash;
+              <span style="font-variant: tabular-nums;">{{ item.ride_count }}</span>
+              <small>поездок</small>
+            </li>
+          {% endfor %}
+        </ul>
       {% endif %}
     </div>
   {% endif %}
 
-  {# История задач #}
   <div class="history">
     <h2>История предсказаний:</h2>
     {% if prediction_history %}
       <ul>
         {% for task in prediction_history %}
           <li>
-            Задача №{{ task.id }} —
-            Дата: {{ task.timestamp }} —
-            Сумма: {{ task.budget_amount }} —
-            Приоритеты: {{ task.preferences }} —
+            Задача №{{ task.id }} — Дата: {{ task.requested_at }}
+            <ul class="forecast-list">
+              {% for rec in task.predicted_values %}
+                <li>{{ rec.timestamp }} — {{ rec.ride_count }}</li>
+              {% endfor %}
+            </ul>
           </li>
         {% endfor %}
       </ul>

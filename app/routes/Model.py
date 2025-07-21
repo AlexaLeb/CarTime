@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, Body
 # from models.services.prediction_task import create as create_prediction_task, \
     # get_by_user_id as get_prediction_tasks_by_user
 # from models.services.prediction_result import create as create_prediction_result
@@ -11,6 +11,8 @@ from database.database import get_session
 from models.PredictionRpcClient import PredictionRpcClient
 from logger.logging import get_logger
 from models.services.transaction import list_transactions
+import json
+import datetime
 
 logger = get_logger(logger_name=__name__)
 router = APIRouter()
@@ -18,13 +20,14 @@ templates = Jinja2Templates(directory="view")
 
 
 @router.post("/")
-async def predict(request: Request,  exog: list[dict] = Body(..., description="Список словарей с ключами 'timestamp' (ISO) и экзогенными признаками"), session: Session = Depends(get_session),
+async def predict(request: Request,  exog: str = Form(..., description="Список словарей с ключами 'timestamp' (ISO) и экзогенными признаками"), session: Session = Depends(get_session),
                   user: str = Depends(authenticate_cookie)) -> dict:
     """
     Назначает задачу на предсказание для пользователя.
     За каждое предсказание списывается 50 баллов с баланса.
     Создает задачу и симулирует результат предсказания.
     """
+
     user_id = get_by_email(session, user).id
     # Получаем баланс пользователя; если баланс не существует, создаем его с начальным значением 0.0
     balance = get_balance(session, user_id)
@@ -38,16 +41,40 @@ async def predict(request: Request,  exog: list[dict] = Body(..., description="�
             detail="Insufficient balance for prediction (requires at least 50 points)"
         )
 
+    try:
+        exog_list = json.loads(exog)
+        if not isinstance(exog_list, list):
+            raise ValueError()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Поле exog должно быть валидным JSON-массивом"
+        )
     # Формируем payload для RPC-запроса
     payload = {
         "user_id": user_id,
-        "exog": exog
+        "exog": exog_list
     }
     logger.info("Вызов RPC клиента")
     rpc_client = PredictionRpcClient()
     result = rpc_client.call(payload)
     logger.info('\nRPC клиент отработал')
-    return templates.TemplateResponse("model.html", {"request": request, "user": user, "result": result, "new_balance": balance.amount})
+    raw = result["predicted_result"]
+    formatted = []
+    for rec in raw:
+        # 1) Парсим ISO-время и форматируем
+        dt = datetime.datetime.fromisoformat(rec["timestamp"])
+        ts_str = dt.strftime("%d %b %Y %H:%M")
+        # 2) Округляем до целого и ставим разделитель тысяч
+        count = round(rec["ride_count"])  # округляем
+        # форматируем с запятыми: 10171 → "10,171"
+        rc = f"{count:,}".replace(",", " ")
+        formatted.append({
+            "timestamp": ts_str,
+            "ride_count": rc
+        })
+    logger.info(formatted)
+    return templates.TemplateResponse("model.html", {"request": request, "user": user, "result": formatted, "new_balance": balance.amount, "message": "Прогноз готов"})
 
 
 @router.get("/")

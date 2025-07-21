@@ -1,7 +1,7 @@
 import json
 import time
 import pika
-from model import predict_from_dataframe
+from worker.model import predict_from_dataframe
 from database.database import get_session
 from models.services import prediction
 from logger.logging import get_logger
@@ -20,7 +20,12 @@ def callback(ch, method, properties, body):
         if not exog_list or not isinstance(exog_list, list):
             raise ValueError("В сообщении отсутствует список 'exog' для прогноза")
 
+    except Exception as err:
+        logger.error(f"Ошибка при обработке сообщения в callback: {err}")
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+
     # Выполняем прогноз
+
     forecast_series = predict_from_dataframe(exog_list)
     # Преобразуем Series в список словарей для сохранения
     forecast_data = [
@@ -29,7 +34,6 @@ def callback(ch, method, properties, body):
     ]
     # Создаем сессию для работы с БД; используем context manager для автоматического закрытия
     session = next(get_session())
-
     prediction.create_prediction(session, user_id, forecast_data, 50)
     logger.warning('\nРАБОТАЕ\n')
     session.commit()
@@ -37,6 +41,7 @@ def callback(ch, method, properties, body):
     # Формирование ответа: создаем JSON-объект с результатом предсказания
     response = json.dumps({
         "predicted_result": forecast_data
+
     })
     # Если в свойствах сообщения указан reply_to, отправляем ответ обратно
     if properties.reply_to:
@@ -94,7 +99,7 @@ def main():
 
 
 if __name__ == "__main__":
-    logger.info('\n\n\nWorker is here\n\n\n')
+    logger.info('Worker is here')
     while True:
         try:
             main()  # запускает потребителя, блокирует на start_consuming()

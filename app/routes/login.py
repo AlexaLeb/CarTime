@@ -30,7 +30,8 @@ async def login_for_access_token(response: Response, form_data: OAuth2PasswordRe
         response.set_cookie(
             key=settings.COOKIE_NAME,
             value=f"Bearer {access_token}",
-            httponly=True
+            httponly=True,
+            max_age=3600
         )
 
         # return {"access_token": access_token, "token_type": "Bearer"}

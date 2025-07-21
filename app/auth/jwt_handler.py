@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Response
 from jose import jwt, JWTError
 from database.config import get_settings
 from logger.logging import get_logger
@@ -13,7 +13,7 @@ SECRET_KEY = settings.SECRET_KEY
 def create_access_token(user: str) -> str:
     payload = {
         "user": user,
-        "expires": time.time() + 36000
+        "expires": time.time() + 3600
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     return token
@@ -42,6 +42,7 @@ def verify_access_token(token: str) -> dict:
                 detail="Token expired!"
             )
         logger.info('Токен расшифрован успешно')
+
         return data
     except JWTError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
